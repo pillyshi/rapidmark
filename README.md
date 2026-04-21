@@ -1,9 +1,11 @@
 # RapidMark
 
-Fast and efficient NER annotation tool.
+Annotate confidential text safely. Everything runs locally in a single HTML file — nothing is sent anywhere.
 
 ## Features
 
+- **Zero Setup for Workers**: Just share an HTML file. No registration, no login, no software installation needed.
+- **Fully Local**: Data never leaves your machine. Ideal for sensitive or confidential text that cannot be uploaded to cloud services.
 - **NER Annotation**: Named Entity Recognition with hierarchical label support
 - **Modern Web Interface**: Vue.js-based annotation interface with intuitive UX
 - **Worker Support**: Personalized annotation workflows for individual workers

@@ -14,7 +14,7 @@ from .sdk.results import (
     TaskInfo
 )
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 __author__ = "pillyshi"
 
 __all__ = [

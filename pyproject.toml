@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "rapidmark"
-version = "0.1.0"
+version = "0.1.1"
 description = "Fast and efficient NLP annotation tool for text labeling tasks"
 authors = ["pillyshi"]
 readme = "README.md"
