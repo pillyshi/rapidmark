@@ -1,0 +1,30 @@
+[tool.poetry]
+name = "rapidmark"
+version = "0.1.0"
+description = "Fast and efficient NLP annotation tool for text labeling tasks"
+authors = ["pillyshi"]
+readme = "README.md"
+packages = [{ include = "rapidmark" }]
+include = ["rapidmark/generator/**/*", "rapidmark/generator/**/.*"]
+
+[tool.poetry.dependencies]
+python = "^3.12"
+typer = { extras = ["all"], version = "^0.16.0" }
+rich = "^14.0.0"
+jinja2 = "^3.1.6"
+jsonschema = "^4.24.0"
+pydantic = "^2.11.5"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^8.0.0"
+pytest-cov = "^6.0.0"
+black = "^24.0.0"
+isort = "^5.13.0"
+mypy = "^1.0.0"
+
+[tool.poetry.scripts]
+rapidmark = "rapidmark.cli:app"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

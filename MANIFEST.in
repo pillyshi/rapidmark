@@ -1,0 +1,20 @@
+# Include all generator files
+recursive-include rapidmark/generator *
+recursive-include rapidmark/generator/.*
+
+# Include documentation
+include README.md
+include LICENSE
+
+# Include package configuration
+include setup.py
+include MANIFEST.in
+
+# Exclude unwanted files
+global-exclude *.pyc
+global-exclude *.pyo
+global-exclude *~
+global-exclude .DS_Store
+prune rapidmark/generator/node_modules/*/test
+prune rapidmark/generator/node_modules/*/tests
+prune rapidmark/generator/node_modules/*/.git
