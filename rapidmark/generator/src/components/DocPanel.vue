@@ -23,8 +23,8 @@
       <div
         ref="textRef"
         class="doc-text"
-        @mouseup="handleMouseUp"
-        @mousedown="handleMouseDown"
+        @mouseup="isClassification ? undefined : handleMouseUp()"
+        @mousedown="isClassification ? undefined : handleMouseDown()"
       >
         <template v-for="(seg, i) in segments" :key="i">
           <span v-if="seg.kind === 'text'">{{ seg.text }}</span>
@@ -93,7 +93,7 @@
       <span class="sc-group"><kbd>C</kbd>&nbsp;toggle done</span>
       <span class="sc-group"><kbd>X</kbd>&nbsp;toggle exclude</span>
       <span class="sc-group"><kbd>1</kbd>–<kbd>9</kbd>&nbsp;assign label</span>
-      <span class="sc-group"><kbd>⌫</kbd>&nbsp;delete entity</span>
+      <span v-if="!isClassification" class="sc-group"><kbd>⌫</kbd>&nbsp;delete entity</span>
     </div>
   </section>
 </template>
@@ -107,9 +107,11 @@ import { useStatus } from '../composables/useStatus'
 import { useLabel } from '../composables/useLabel'
 import { usePopover } from '../composables/usePopover'
 import { useToast } from '../composables/useToast'
+import { useClassification } from '../composables/useClassification'
 import { getLabelColors } from '../utils/labelColors'
 
-const { currentText } = useTask()
+const { currentText, isClassification } = useTask()
+const { currentClassification, setClassification, clearClassification } = useClassification()
 const { entities, addEntity } = useEntity()
 const { selectedEntityId, toggleEntitySelection, selectEntity } = useEntitySelection()
 const { currentStatus } = useStatus()
@@ -278,6 +280,21 @@ const createEntity = (labelId: string) => {
   cancelPopover()
 }
 
+// ── Classification ───────────────────────────────────────────────────────────
+const clsButtonStyle = (hue: number) => {
+  const c = getLabelColors(hue, 'tinted')
+  return { '--ent-bg': c.bg, '--ent-bg-deep': c.bgDeep, '--ent-border': c.border, '--ent-dot': c.dot, '--ent-ink': c.ink }
+}
+
+const onClassify = (labelId: string) => {
+  if (!currentText.value) return
+  if (currentClassification.value === labelId) {
+    clearClassification(currentText.value.id)
+  } else {
+    setClassification(currentText.value.id, labelId)
+  }
+}
+
 // Expose for keyboard shortcuts in App.vue
-defineExpose({ cancelPopover, createEntity })
+defineExpose({ cancelPopover, createEntity, onClassify })
 </script>

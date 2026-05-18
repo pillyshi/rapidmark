@@ -24,7 +24,7 @@ export interface Task {
 interface TaskDefinition {
   id: string
   name: string
-  type: "ner"
+  type: "ner" | "classification"
   description: string | null
   labels?: Label[]
 }
@@ -46,6 +46,7 @@ const currentText = computed(() => {
   if (task.value == null) return null
   return task.value.texts[currentTextIndex.value]
 })
+const isClassification = computed(() => task.value?.definition?.type === 'classification')
 
 export function useTask() {
   const loadTask = async (): Promise<void> => {
@@ -56,6 +57,7 @@ export function useTask() {
     task,
     currentTextIndex,
     currentText,
+    isClassification,
     loadTask,
   }
 }

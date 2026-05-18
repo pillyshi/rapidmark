@@ -1,11 +1,13 @@
 import { useTask } from './useTask'
 import { useEntity } from './useEntity'
 import { useStatus } from './useStatus'
+import { useClassification } from './useClassification'
 
 export function useResult() {
   const { task } = useTask()
   const { entities, addEntity } = useEntity()
   const { statuses, setStatus } = useStatus()
+  const { classifications, setClassification } = useClassification()
 
   const loadResult = (data: any): void => {
     // New format: { task, worker, texts: [{ id, status, entities }] }
@@ -14,6 +16,7 @@ export function useResult() {
         const textIndex = task.value?.texts?.findIndex(t => t.id === tx.id)
         if (textIndex === undefined || textIndex < 0) return
         if (tx.status) setStatus(textIndex, tx.status)
+        if (tx.label_id) setClassification(tx.id, tx.label_id)
         if (Array.isArray(tx.entities)) {
           tx.entities.forEach((en: any) => {
             if (typeof en.start === 'number' && typeof en.end === 'number' && (en.labelId || en.label)) {
@@ -56,18 +59,27 @@ export function useResult() {
 
   const exportResult = (workerName: string): string => {
     const def = task.value?.definition
+    const isClassification = def?.type === 'classification'
     const payload = {
       task: { id: def?.id || '', name: def?.name || '', type: def?.type || 'ner' },
       worker: workerName || null,
       exported_at: new Date().toISOString(),
-      texts: (task.value?.texts || []).map((txt, idx) => ({
-        id: txt.id,
-        status: statuses.value[idx] || 'pending',
-        attributes: txt.attributes,
-        entities: entities.value
-          .filter(e => e.textId === txt.id)
-          .map(e => ({ id: e.id, start: e.start, end: e.end, quote: e.quote, labelId: e.labelId }))
-      }))
+      texts: (task.value?.texts || []).map((txt, idx) => {
+        const base = {
+          id: txt.id,
+          status: statuses.value[idx] || 'pending',
+          attributes: txt.attributes,
+        }
+        if (isClassification) {
+          return { ...base, label_id: classifications.value[txt.id] ?? null }
+        }
+        return {
+          ...base,
+          entities: entities.value
+            .filter(e => e.textId === txt.id)
+            .map(e => ({ id: e.id, start: e.start, end: e.end, quote: e.quote, labelId: e.labelId }))
+        }
+      })
     }
     return JSON.stringify(payload, null, 2)
   }

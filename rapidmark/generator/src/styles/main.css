@@ -787,6 +787,58 @@ kbd {
   .worker input { width: 88px; }
 }
 
+/* ── Classification picker ──────────────────────────────────────────────────── */
+.sidebar-section-head {
+  padding: 10px 14px 4px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+
+.classification-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 6px 10px 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.cls-btn {
+  display: grid;
+  grid-template-columns: auto 1fr auto auto auto;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 12px;
+  border: 1.5px solid var(--hair-2);
+  background: var(--paper-2);
+  border-radius: 7px;
+  cursor: default;
+  text-align: left;
+  font-size: var(--fs-sm);
+  color: var(--ink);
+  transition: background .1s, border-color .1s;
+}
+.cls-btn:hover { background: var(--ent-bg); border-color: var(--ent-border); }
+.cls-btn.selected {
+  background: var(--ent-bg);
+  border-color: var(--ent-border);
+  color: var(--ent-ink);
+}
+.cls-dot { width: 10px; height: 10px; background: var(--ent-dot); border-radius: 50%; flex-shrink: 0; }
+.cls-name { font-weight: 500; }
+.cls-short {
+  font-family: var(--font-mono);
+  font-size: 10.5px;
+  color: var(--ink-3);
+  background: var(--paper-3);
+  border-radius: 3px;
+  padding: 1px 4px;
+}
+.cls-check { color: var(--ent-dot); font-size: 13px; font-weight: 700; }
+
 @media (max-width: 900px) {
   .worker label { display: none; }
   .local-text em { display: none; }

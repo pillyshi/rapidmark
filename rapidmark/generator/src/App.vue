@@ -54,7 +54,7 @@ import { usePopover } from './composables/usePopover'
 import { useToast } from './composables/useToast'
 import { useResult } from './composables/useResult'
 
-const { task, loadTask, currentTextIndex } = useTask()
+const { task, loadTask, currentTextIndex, isClassification } = useTask()
 const { initializeStatuses, statuses, currentStatus, setCurrentStatus } = useStatus()
 const { entities, removeEntity } = useEntity()
 const { selectedEntityId, clearEntitySelection } = useEntitySelection()
@@ -160,8 +160,16 @@ const onKey = (e: KeyboardEvent) => {
   const target = e.target as HTMLElement
   if (target.tagName === 'INPUT' || target.tagName === 'TEXTAREA') return
 
-  // When popover is open: label shortcuts and escape
-  if (popover.value) {
+  // Label shortcuts
+  if (isClassification.value) {
+    const lbl = derivedLabels.value.find(l => l.key === e.key)
+    if (lbl) {
+      e.preventDefault()
+      docPanelRef.value?.onClassify(lbl.id)
+      return
+    }
+  } else if (popover.value) {
+    // NER: label shortcuts and escape only when popover is open
     const lbl = derivedLabels.value.find(l => l.key === e.key)
     if (lbl) {
       e.preventDefault()
@@ -186,7 +194,7 @@ const onKey = (e: KeyboardEvent) => {
     e.preventDefault()
     setCurrentStatus(currentStatus.value === 'excluded' ? 'pending' : 'excluded')
   }
-  else if (e.key === 'Delete' || e.key === 'Backspace') {
+  else if (!isClassification.value && (e.key === 'Delete' || e.key === 'Backspace')) {
     if (selectedEntityId.value) {
       e.preventDefault()
       removeEntity(selectedEntityId.value)

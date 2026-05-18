@@ -36,9 +36,15 @@ class TextResult(BaseModel):
     id: str = Field(..., description="Text ID")
     status: str = Field(..., description="Status (pending, completed, excluded)")
     attributes: Dict[str, Any] = Field(default_factory=dict, description="Text attributes")
-    entities: List[EntityAnnotation] = Field(default_factory=list, description="Entity list")
+    entities: List[EntityAnnotation] = Field(default_factory=list, description="NER entity list")
+    label_id: Optional[str] = Field(
+        default=None,
+        description="Classification label ID (classification tasks only)",
+        validation_alias=AliasChoices("label_id", "labelId"),
+        serialization_alias="label_id",
+    )
 
-    model_config = {"extra": "ignore"}
+    model_config = {"extra": "ignore", "populate_by_name": True}
 
 
 class TaskMeta(BaseModel):
@@ -99,6 +105,10 @@ class RapidmarkResults(BaseModel):
     def filter_entities_by_label(self, label_id: str) -> List[EntityAnnotation]:
         """Get all entities with the specified label ID."""
         return [e for e in self.get_all_entities() if e.label_id == label_id]
+
+    def filter_texts_by_label(self, label_id: str) -> List[TextResult]:
+        """Get all texts assigned the specified label ID (classification tasks)."""
+        return [t for t in self.texts if t.label_id == label_id]
 
     def get_completion_rate(self) -> float:
         """Get completion rate (0.0-1.0)."""
