@@ -21,7 +21,7 @@
       </div>
     </template>
 
-    <!-- NER mode: tabs + entity list -->
+    <!-- NER mode: tabs + entity list + groups -->
     <template v-else>
       <div class="tabs">
         <button
@@ -41,6 +41,14 @@
       </div>
 
       <template v-if="activeTab === 'entity'">
+        <!-- Group action bar (shown when ≥2 entities selected) -->
+        <div v-if="selectedEntityIds.length >= 2" class="group-action-bar">
+          <span class="group-count">{{ selectedEntityIds.length }} selected</span>
+          <button class="btn-group-create" @click="handleCreateGroup">
+            Group <kbd>G</kbd>
+          </button>
+        </div>
+
         <div v-if="docEntities.length === 0" class="empty">
           <div class="empty-icon" aria-hidden="true">┼</div>
           <p class="empty-title">No entities yet</p>
@@ -51,7 +59,7 @@
           <div
             v-for="entity in sortedEntities"
             :key="entity.id"
-            :class="['ent-row', { selected: selectedEntityId === entity.id }]"
+            :class="['ent-row', { selected: isEntitySelected(entity.id) }]"
             @click="toggleEntitySelection(entity.id)"
           >
             <div class="ent-row-left">
@@ -77,6 +85,31 @@
               title="Delete"
             >×</button>
           </div>
+
+          <!-- Groups section -->
+          <template v-if="docGroups.length > 0">
+            <div class="group-section-head">Groups</div>
+            <div
+              v-for="group in docGroups"
+              :key="group.id"
+              class="group-row"
+            >
+              <div class="group-members">
+                <span
+                  v-for="eid in group.entityIds"
+                  :key="eid"
+                  class="group-member-chip"
+                  :style="chipStyle(eid)"
+                >{{ entityQuote(eid) }}</span>
+              </div>
+              <button
+                class="ent-row-del"
+                @click="deleteGroup(group.id)"
+                aria-label="Delete group"
+                title="Delete group"
+              >×</button>
+            </div>
+          </template>
         </div>
       </template>
 
@@ -99,13 +132,15 @@ import { useEntity } from '../composables/useEntity'
 import { useEntitySelection } from '../composables/useEntitySelection'
 import { useLabel } from '../composables/useLabel'
 import { useClassification } from '../composables/useClassification'
+import { useEntityGroup } from '../composables/useEntityGroup'
 import { getLabelColors } from '../utils/labelColors'
 
 const { currentText, isClassification } = useTask()
 const { currentClassification, setClassification, clearClassification } = useClassification()
 const { derivedLabels, getLabelById } = useLabel()
 const { entities, removeEntity } = useEntity()
-const { selectedEntityId, toggleEntitySelection } = useEntitySelection()
+const { selectedEntityIds, isEntitySelected, toggleEntitySelection, clearEntitySelection } = useEntitySelection()
+const { docGroups, createGroup, deleteGroup } = useEntityGroup()
 
 const activeTab = ref<'entity' | 'comment'>('entity')
 
@@ -146,5 +181,24 @@ const onClassify = (labelId: string) => {
   } else {
     setClassification(currentText.value.id, labelId)
   }
+}
+
+const handleCreateGroup = () => {
+  if (!currentText.value || selectedEntityIds.value.length < 2) return
+  createGroup(currentText.value.id, [...selectedEntityIds.value])
+  clearEntitySelection()
+}
+
+const entityQuote = (entityId: string): string => {
+  return entities.value.find(e => e.id === entityId)?.quote || entityId
+}
+
+const chipStyle = (entityId: string) => {
+  const entity = entities.value.find(e => e.id === entityId)
+  if (!entity) return {}
+  const label = getLabelById(entity.labelId)
+  if (!label) return {}
+  const c = getLabelColors(label.hue, 'tinted')
+  return { '--ent-bg': c.bg, '--ent-border': c.border, '--ent-dot': c.dot, '--ent-ink': c.ink }
 }
 </script>

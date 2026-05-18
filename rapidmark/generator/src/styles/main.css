@@ -787,6 +787,60 @@ kbd {
   .worker input { width: 88px; }
 }
 
+/* ── Entity groups ──────────────────────────────────────────────────────────── */
+.group-action-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 6px 10px;
+  background: var(--paper-2);
+  border-bottom: 1px solid var(--hair);
+}
+.group-count { font-size: var(--fs-xs); color: var(--ink-3); font-weight: 600; }
+.btn-group-create {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border: 1px solid var(--hair-2);
+  background: var(--paper);
+  border-radius: 5px;
+  font-size: var(--fs-xs);
+  font-weight: 600;
+  color: var(--ink);
+  cursor: default;
+  transition: background .1s, border-color .1s;
+}
+.btn-group-create:hover { background: var(--paper-3); border-color: var(--ink-4); }
+
+.group-section-head {
+  padding: 10px 10px 4px;
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+  color: var(--ink-3);
+}
+.group-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--hair);
+}
+.group-members { display: flex; flex-wrap: wrap; gap: 4px; flex: 1; }
+.group-member-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  padding: 2px 7px;
+  background: var(--ent-bg);
+  border: 1px solid var(--ent-border);
+  border-radius: 4px;
+  font-size: var(--fs-xs);
+  color: var(--ent-ink, var(--ink));
+}
+
 /* ── Classification picker ──────────────────────────────────────────────────── */
 .sidebar-section-head {
   padding: 10px 14px 4px;

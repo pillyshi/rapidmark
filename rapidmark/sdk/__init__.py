@@ -12,6 +12,7 @@ from .models import (
 from .results import (
     RapidmarkResults,
     EntityAnnotation,
+    EntityGroup,
     TextResult,
     TaskMeta,
 )
@@ -23,6 +24,7 @@ __all__ = [
     "RapidmarkTask",
     "RapidmarkResults",
     "EntityAnnotation",
+    "EntityGroup",
     "TextResult",
     "TaskMeta",
 ]

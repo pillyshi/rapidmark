@@ -2,12 +2,14 @@ import { useTask } from './useTask'
 import { useEntity } from './useEntity'
 import { useStatus } from './useStatus'
 import { useClassification } from './useClassification'
+import { useEntityGroup } from './useEntityGroup'
 
 export function useResult() {
   const { task } = useTask()
   const { entities, addEntity } = useEntity()
   const { statuses, setStatus } = useStatus()
   const { classifications, setClassification } = useClassification()
+  const { groups, createGroup } = useEntityGroup()
 
   const loadResult = (data: any): void => {
     // New format: { task, worker, texts: [{ id, status, entities }] }
@@ -17,6 +19,12 @@ export function useResult() {
         if (textIndex === undefined || textIndex < 0) return
         if (tx.status) setStatus(textIndex, tx.status)
         if (tx.label_id) setClassification(tx.id, tx.label_id)
+        if (Array.isArray(tx.groups)) {
+          tx.groups.forEach((g: any) => {
+            const ids = g.entity_ids || g.entityIds || []
+            if (ids.length >= 2) createGroup(tx.id, ids)
+          })
+        }
         if (Array.isArray(tx.entities)) {
           tx.entities.forEach((en: any) => {
             if (typeof en.start === 'number' && typeof en.end === 'number' && (en.labelId || en.label)) {
@@ -77,7 +85,10 @@ export function useResult() {
           ...base,
           entities: entities.value
             .filter(e => e.textId === txt.id)
-            .map(e => ({ id: e.id, start: e.start, end: e.end, quote: e.quote, labelId: e.labelId }))
+            .map(e => ({ id: e.id, start: e.start, end: e.end, quote: e.quote, labelId: e.labelId })),
+          groups: groups.value
+            .filter(g => g.textId === txt.id)
+            .map(g => ({ id: g.id, entity_ids: g.entityIds }))
         }
       })
     }

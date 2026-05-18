@@ -10,11 +10,12 @@ from .sdk.models import (
 from .sdk.results import (
     RapidmarkResults,
     EntityAnnotation,
+    EntityGroup,
     TextResult,
     TaskMeta,
 )
 
-__version__ = "0.3.0"
+__version__ = "0.4.0"
 __author__ = "pillyshi"
 
 __all__ = [
@@ -24,6 +25,7 @@ __all__ = [
     "RapidmarkTask",
     "RapidmarkResults",
     "EntityAnnotation",
+    "EntityGroup",
     "TextResult",
     "TaskMeta",
 ]

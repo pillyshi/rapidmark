@@ -1,5 +1,6 @@
 import { ref } from "vue";
 import { Field } from "./useTask";
+import { useEntityGroup } from "./useEntityGroup";
 
 
 interface Entity {
@@ -29,6 +30,7 @@ export const useEntity = () => {
     const index = entities.value.findIndex(entity => entity.id === entityId)
     if (index !== -1) {
       entities.value.splice(index, 1)
+      useEntityGroup().cleanupEntity(entityId)
       return true
     }
     return false

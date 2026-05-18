@@ -30,7 +30,7 @@
           <span v-if="seg.kind === 'text'">{{ seg.text }}</span>
           <span
             v-else-if="seg.entity && seg.label"
-            :class="['ent', { selected: selectedEntityId === seg.entity.id }, 'style-tinted']"
+            :class="['ent', { selected: isEntitySelected(seg.entity.id) }, 'style-tinted']"
             :style="entStyle(seg.label.hue)"
             :title="`${seg.label.name} · ${seg.entity.start}–${seg.entity.end}`"
             @click.stop="toggleEntitySelection(seg.entity.id)"
@@ -93,7 +93,8 @@
       <span class="sc-group"><kbd>C</kbd>&nbsp;toggle done</span>
       <span class="sc-group"><kbd>X</kbd>&nbsp;toggle exclude</span>
       <span class="sc-group"><kbd>1</kbd>–<kbd>9</kbd>&nbsp;assign label</span>
-      <span v-if="!isClassification" class="sc-group"><kbd>⌫</kbd>&nbsp;delete entity</span>
+      <span v-if="!isClassification" class="sc-group"><kbd>G</kbd>&nbsp;group</span>
+      <span v-if="!isClassification" class="sc-group"><kbd>⌫</kbd>&nbsp;delete</span>
     </div>
   </section>
 </template>
@@ -113,7 +114,7 @@ import { getLabelColors } from '../utils/labelColors'
 const { currentText, isClassification } = useTask()
 const { currentClassification, setClassification, clearClassification } = useClassification()
 const { entities, addEntity } = useEntity()
-const { selectedEntityId, toggleEntitySelection, selectEntity } = useEntitySelection()
+const { isEntitySelected, toggleEntitySelection, selectEntity } = useEntitySelection()
 const { currentStatus } = useStatus()
 const { derivedLabels, labelGroups, getLabelById } = useLabel()
 const { popover, setPopover } = usePopover()

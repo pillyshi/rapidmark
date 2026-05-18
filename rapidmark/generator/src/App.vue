@@ -49,15 +49,17 @@ import { useTask } from './composables/useTask'
 import { useStatus } from './composables/useStatus'
 import { useEntity } from './composables/useEntity'
 import { useEntitySelection } from './composables/useEntitySelection'
+import { useEntityGroup } from './composables/useEntityGroup'
 import { useLabel } from './composables/useLabel'
 import { usePopover } from './composables/usePopover'
 import { useToast } from './composables/useToast'
 import { useResult } from './composables/useResult'
 
-const { task, loadTask, currentTextIndex, isClassification } = useTask()
+const { task, loadTask, currentTextIndex, currentText, isClassification } = useTask()
 const { initializeStatuses, statuses, currentStatus, setCurrentStatus } = useStatus()
 const { entities, removeEntity } = useEntity()
-const { selectedEntityId, clearEntitySelection } = useEntitySelection()
+const { selectedEntityIds, clearEntitySelection } = useEntitySelection()
+const { createGroup } = useEntityGroup()
 const { derivedLabels } = useLabel()
 const { popover, clearPopover } = usePopover()
 const { toast, importError, showToast, showError, clearError } = useToast()
@@ -194,10 +196,17 @@ const onKey = (e: KeyboardEvent) => {
     e.preventDefault()
     setCurrentStatus(currentStatus.value === 'excluded' ? 'pending' : 'excluded')
   }
-  else if (!isClassification.value && (e.key === 'Delete' || e.key === 'Backspace')) {
-    if (selectedEntityId.value) {
+  else if (!isClassification.value && e.key === 'g') {
+    if (selectedEntityIds.value.length >= 2 && currentText.value) {
       e.preventDefault()
-      removeEntity(selectedEntityId.value)
+      createGroup(currentText.value.id, [...selectedEntityIds.value])
+      clearEntitySelection()
+    }
+  }
+  else if (!isClassification.value && (e.key === 'Delete' || e.key === 'Backspace')) {
+    if (selectedEntityIds.value.length > 0) {
+      e.preventDefault()
+      selectedEntityIds.value.forEach(id => removeEntity(id))
       clearEntitySelection()
     }
   }

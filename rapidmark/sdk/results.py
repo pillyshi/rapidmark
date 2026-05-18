@@ -11,6 +11,19 @@ from typing import Union, Dict, List, Optional, Any
 from pydantic import AliasChoices, BaseModel, Field
 
 
+class EntityGroup(BaseModel):
+    """Entity group (co-reference cluster)."""
+    id: str = Field(..., description="Group ID")
+    entity_ids: List[str] = Field(
+        ...,
+        description="IDs of entities in this group",
+        validation_alias=AliasChoices("entity_ids", "entityIds"),
+        serialization_alias="entity_ids",
+    )
+
+    model_config = {"extra": "ignore", "populate_by_name": True}
+
+
 class EntityAnnotation(BaseModel):
     """NER entity annotation result."""
     id: str = Field(..., description="Entity ID")
@@ -37,6 +50,7 @@ class TextResult(BaseModel):
     status: str = Field(..., description="Status (pending, completed, excluded)")
     attributes: Dict[str, Any] = Field(default_factory=dict, description="Text attributes")
     entities: List[EntityAnnotation] = Field(default_factory=list, description="NER entity list")
+    groups: List[EntityGroup] = Field(default_factory=list, description="Entity groups")
     label_id: Optional[str] = Field(
         default=None,
         description="Classification label ID (classification tasks only)",
