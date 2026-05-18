@@ -1,23 +1,24 @@
 import { ref } from 'vue'
 
-const selectedEntityIds = ref<string[]>([])
+const selectedEntityId = ref<string | null>(null)
 
 export const useEntitySelection = () => {
-  const toggleEntitySelection = (entityId: string) => {
-    const idx = selectedEntityIds.value.indexOf(entityId)
-    if (idx === -1) {
-      selectedEntityIds.value.push(entityId)
-    } else {
-      selectedEntityIds.value.splice(idx, 1)
-    }
+  const selectEntity = (id: string | null) => {
+    selectedEntityId.value = id
+  }
+
+  const toggleEntitySelection = (id: string) => {
+    selectedEntityId.value = selectedEntityId.value === id ? null : id
   }
 
   const clearEntitySelection = () => {
-    selectedEntityIds.value = []
+    selectedEntityId.value = null
   }
 
-  const isEntitySelected = (entityId: string) =>
-    selectedEntityIds.value.includes(entityId)
+  const isEntitySelected = (id: string) => selectedEntityId.value === id
 
-  return { selectedEntityIds, toggleEntitySelection, clearEntitySelection, isEntitySelected }
+  // backward compat
+  const selectedEntityIds = { value: selectedEntityId.value ? [selectedEntityId.value] : [] }
+
+  return { selectedEntityId, selectedEntityIds, selectEntity, toggleEntitySelection, clearEntitySelection, isEntitySelected }
 }

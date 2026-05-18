@@ -25,10 +25,13 @@ def demonstrate_ner_results_processing(results_path: Path) -> None:
 
     # Step 2: Access task metadata
     print("\n=== Task Information ===")
-    print(f"Task Type: {results.task_info.task_type}")
-    print(f"Task Title: {results.task_info.task_title}")
-    print(f"Total Texts: {results.task_info.total_texts}")
-    print(f"Completed: {results.task_info.completed_texts}")
+    print(f"Task ID:    {results.task.id}")
+    print(f"Task Name:  {results.task.name}")
+    print(f"Task Type:  {results.task.type}")
+    print(f"Worker:     {results.worker or '(anonymous)'}")
+    print(f"Total Texts: {len(results.texts)}")
+    completed = sum(1 for t in results.texts if t.status == "completed")
+    print(f"Completed:  {completed}")
     print(f"Completion Rate: {results.get_completion_rate():.1%}")
 
     # Step 3: Get all entities (raw access)
@@ -38,7 +41,7 @@ def demonstrate_ner_results_processing(results_path: Path) -> None:
 
     # Show first few entities
     for entity in entities[:5]:
-        print(f"  [{entity.label_id}] \"{entity.text}\" (pos: {entity.start}-{entity.end})")
+        print(f"  [{entity.label_id}] \"{entity.quote}\" (pos: {entity.start}-{entity.end})")
     if len(entities) > 5:
         print(f"  ... and {len(entities) - 5} more")
 
@@ -54,29 +57,27 @@ def demonstrate_ner_results_processing(results_path: Path) -> None:
         filtered = results.filter_entities_by_label(label_id)
         if filtered:
             print(f"\n  {label_id.upper()} ({len(filtered)} entities):")
-            unique_texts = set(e.text for e in filtered)
-            for text in list(unique_texts)[:5]:
-                print(f"    - \"{text}\"")
-            if len(unique_texts) > 5:
-                print(f"    ... and {len(unique_texts) - 5} more unique values")
+            unique_quotes = set(e.quote for e in filtered)
+            for quote in list(unique_quotes)[:5]:
+                print(f"    - \"{quote}\"")
+            if len(unique_quotes) > 5:
+                print(f"    ... and {len(unique_quotes) - 5} more unique values")
 
     # Step 6: Entity frequency analysis
     print("\n=== Most Common Entities ===")
-    entity_texts = [entity.text for entity in entities]
-    most_common = Counter(entity_texts).most_common(10)
-    for text, count in most_common:
-        print(f"  \"{text}\": {count} occurrences")
+    entity_quotes = [entity.quote for entity in entities]
+    most_common = Counter(entity_quotes).most_common(10)
+    for quote, count in most_common:
+        print(f"  \"{quote}\": {count} occurrences")
 
     # Step 7: Access results by text ID
     print("\n=== Results by Text ID ===")
-    for text_id in list(results.results.keys())[:3]:
-        text_result = results.get_text_result(text_id)
-        if text_result:
-            print(f"\n  Text ID: {text_id}")
-            print(f"  Status: {text_result.status}")
-            print(f"  Entities: {len(text_result.entities)}")
-            for entity in text_result.entities[:3]:
-                print(f"    - [{entity.label_id}] \"{entity.text}\"")
+    for text_result in results.texts[:3]:
+        print(f"\n  Text ID: {text_result.id}")
+        print(f"  Status: {text_result.status}")
+        print(f"  Entities: {len(text_result.entities)}")
+        for entity in text_result.entities[:3]:
+            print(f"    - [{entity.label_id}] \"{entity.quote}\"")
 
 
 def create_mock_results() -> dict:
@@ -84,63 +85,48 @@ def create_mock_results() -> dict:
     from datetime import datetime
 
     return {
-        "taskInfo": {
-            "taskType": "structured_extraction",
-            "taskTitle": "News Article NER",
-            "taskDescription": "Extract named entities from news articles",
-            "taskId": "news_ner",
-            "labels": [
-                {"id": "person", "name": "Person"},
-                {"id": "organization", "name": "Organization"},
-                {"id": "location", "name": "Location"},
-                {"id": "date", "name": "Date"},
-                {"id": "product", "name": "Product"},
-            ],
-            "structures": [],
-            "totalTexts": 3,
-            "completedTexts": 3,
-            "completionRate": 1.0,
-            "totalAnnotations": 12,
-            "totalComments": 0,
-            "exportFormat": "unified_v1",
-            "exportedAt": datetime.now().isoformat(),
-            "version": "1.0"
+        "task": {
+            "id": "news_ner",
+            "name": "News Article NER",
+            "type": "ner",
         },
-        "results": {
-            "news_001": {
+        "worker": "alice",
+        "exported_at": datetime.now().isoformat(),
+        "texts": [
+            {
+                "id": "news_001",
                 "status": "completed",
                 "attributes": {"source": "tech_news"},
                 "entities": [
-                    {"id": "e1", "start": 0, "end": 5, "text": "Apple", "labelId": "organization", "timestamp": datetime.now().isoformat()},
-                    {"id": "e2", "start": 10, "end": 18, "text": "Tim Cook", "labelId": "person", "timestamp": datetime.now().isoformat()},
-                    {"id": "e3", "start": 37, "end": 46, "text": "iPhone 15", "labelId": "product", "timestamp": datetime.now().isoformat()},
-                    {"id": "e4", "start": 80, "end": 89, "text": "Cupertino", "labelId": "location", "timestamp": datetime.now().isoformat()},
-                    {"id": "e5", "start": 93, "end": 111, "text": "September 12, 2023", "labelId": "date", "timestamp": datetime.now().isoformat()},
+                    {"id": "e1", "start": 0, "end": 5, "quote": "Apple", "labelId": "organization"},
+                    {"id": "e2", "start": 10, "end": 18, "quote": "Tim Cook", "labelId": "person"},
+                    {"id": "e3", "start": 37, "end": 46, "quote": "iPhone 15", "labelId": "product"},
+                    {"id": "e4", "start": 80, "end": 89, "quote": "Cupertino", "labelId": "location"},
+                    {"id": "e5", "start": 93, "end": 111, "quote": "September 12, 2023", "labelId": "date"},
                 ],
-                "structures": []
             },
-            "news_002": {
+            {
+                "id": "news_002",
                 "status": "completed",
                 "attributes": {"source": "business_news"},
                 "entities": [
-                    {"id": "e6", "start": 0, "end": 9, "text": "Microsoft", "labelId": "organization", "timestamp": datetime.now().isoformat()},
-                    {"id": "e7", "start": 12, "end": 25, "text": "Satya Nadella", "labelId": "person", "timestamp": datetime.now().isoformat()},
-                    {"id": "e8", "start": 35, "end": 49, "text": "European Union", "labelId": "organization", "timestamp": datetime.now().isoformat()},
-                    {"id": "e9", "start": 63, "end": 71, "text": "Brussels", "labelId": "location", "timestamp": datetime.now().isoformat()},
+                    {"id": "e6", "start": 0, "end": 9, "quote": "Microsoft", "labelId": "organization"},
+                    {"id": "e7", "start": 12, "end": 25, "quote": "Satya Nadella", "labelId": "person"},
+                    {"id": "e8", "start": 35, "end": 49, "quote": "European Union", "labelId": "organization"},
+                    {"id": "e9", "start": 63, "end": 71, "quote": "Brussels", "labelId": "location"},
                 ],
-                "structures": []
             },
-            "news_003": {
+            {
+                "id": "news_003",
                 "status": "completed",
                 "attributes": {"source": "automotive_news"},
                 "entities": [
-                    {"id": "e10", "start": 0, "end": 5, "text": "Tesla", "labelId": "organization", "timestamp": datetime.now().isoformat()},
-                    {"id": "e11", "start": 40, "end": 51, "text": "Gigafactory", "labelId": "product", "timestamp": datetime.now().isoformat()},
-                    {"id": "e12", "start": 55, "end": 61, "text": "Mexico", "labelId": "location", "timestamp": datetime.now().isoformat()},
+                    {"id": "e10", "start": 0, "end": 5, "quote": "Tesla", "labelId": "organization"},
+                    {"id": "e11", "start": 40, "end": 51, "quote": "Gigafactory", "labelId": "product"},
+                    {"id": "e12", "start": 55, "end": 61, "quote": "Mexico", "labelId": "location"},
                 ],
-                "structures": []
-            }
-        }
+            },
+        ],
     }
 
 
@@ -149,7 +135,8 @@ if __name__ == "__main__":
     import tempfile
 
     # Try to load real results file first
-    example_results_path = Path(__file__).parent / "news_ner.result.rapidmark.json"
+    # The filename format is: {task_id}.{worker}.result.rapidmark.json
+    example_results_path = Path(__file__).parent / "news_ner.alice.result.rapidmark.json"
 
     if example_results_path.exists():
         demonstrate_ner_results_processing(example_results_path)
@@ -158,7 +145,7 @@ if __name__ == "__main__":
         print("\nTo use this example with real data:")
         print("1. Run 03_complete_ner_task.py to create the task file")
         print("2. Annotate texts using the Rapidmark web interface")
-        print("3. Export results to the same directory")
+        print("3. Export results (filename: news_ner.{worker}.result.rapidmark.json)")
         print("4. Run this script again")
 
         # Create mock data for demonstration
@@ -175,7 +162,7 @@ if __name__ == "__main__":
         try:
             demonstrate_ner_results_processing(temp_path)
         finally:
-            temp_path.unlink()  # Clean up temp file
+            temp_path.unlink()
 
         print("\n=== Available Methods for NER Results ===")
         print("  - RapidmarkResults.from_file(path) - Load results from JSON file")

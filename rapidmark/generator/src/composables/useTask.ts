@@ -5,6 +5,11 @@ declare global {
   const __RESULT_CONFIG__: any
 }
 
+export interface Field {
+  kind: 'full' | 'withoutLabelIds' | 'withoutStructureIds' | 'groupOnly'
+  labelIds: string[]
+}
+
 interface TaskText {
   id: string
   content: string
@@ -24,10 +29,15 @@ interface TaskDefinition {
   labels?: Label[]
 }
 
-interface Label {
+export interface Label {
   id: string
   name: string
   parentId: string | null
+  // Optional design-system fields (may be present in extended task format)
+  group?: string
+  short?: string
+  hue?: number
+  key?: string
 }
 
 const task = ref<Task | null>(null)

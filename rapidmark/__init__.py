@@ -11,7 +11,7 @@ from .sdk.results import (
     RapidmarkResults,
     EntityAnnotation,
     TextResult,
-    TaskInfo
+    TaskMeta,
 )
 
 __version__ = "0.1.1"
@@ -25,5 +25,5 @@ __all__ = [
     "RapidmarkResults",
     "EntityAnnotation",
     "TextResult",
-    "TaskInfo",
+    "TaskMeta",
 ]

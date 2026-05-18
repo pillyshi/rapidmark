@@ -13,7 +13,7 @@ from .results import (
     RapidmarkResults,
     EntityAnnotation,
     TextResult,
-    TaskInfo
+    TaskMeta,
 )
 
 __all__ = [
@@ -24,5 +24,5 @@ __all__ = [
     "RapidmarkResults",
     "EntityAnnotation",
     "TextResult",
-    "TaskInfo"
+    "TaskMeta",
 ]
