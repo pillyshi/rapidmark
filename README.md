@@ -7,6 +7,7 @@ Annotate confidential text safely. Everything runs locally in a single HTML file
 - **Zero Setup for Workers**: Just share an HTML file. No registration, no login, no software installation needed.
 - **Fully Local**: Data never leaves your machine. Ideal for sensitive or confidential text that cannot be uploaded to cloud services.
 - **NER Annotation**: Named Entity Recognition with hierarchical label support
+- **Classification**: Single-label document classification (sentiment, topic, intent, …)
 - **Modern Web Interface**: Vue.js-based annotation interface with intuitive UX
 - **Worker Support**: Personalized annotation workflows for individual workers
 - **Result Embedding**: Embed existing results into HTML for easy review and correction
@@ -37,12 +38,12 @@ poetry install
 
 ## Quick Start
 
-1. **Create a new NER task**:
+1. **Define a task** (JSON file):
    ```bash
    rapidmark init --name my-task
    ```
 
-2. **Build annotation tool**:
+2. **Build the annotation tool**:
    ```bash
    rapidmark build my-task.rapidmark.json --worker alice
    ```
@@ -100,7 +101,11 @@ rapidmark clean
 
 ## Task Configuration
 
-RapidMark uses JSON configuration files to define annotation tasks:
+RapidMark uses JSON configuration files to define annotation tasks.
+
+### NER
+
+Annotators select text spans and assign labels.
 
 ```json
 {
@@ -116,6 +121,28 @@ RapidMark uses JSON configuration files to define annotation tasks:
   },
   "texts": [
     {"id": "doc1", "content": "Apple Inc. was founded by Steve Jobs in Cupertino."}
+  ]
+}
+```
+
+### Classification
+
+Annotators read each document and assign a single label.
+
+```json
+{
+  "definition": {
+    "id": "sentiment",
+    "name": "Sentiment Analysis",
+    "type": "classification",
+    "labels": [
+      {"id": "positive", "name": "Positive"},
+      {"id": "negative", "name": "Negative"},
+      {"id": "neutral",  "name": "Neutral"}
+    ]
+  },
+  "texts": [
+    {"id": "r1", "content": "I absolutely love this product!"}
   ]
 }
 ```
@@ -144,7 +171,7 @@ task = RapidmarkTask(
 task.save("news_ner.rapidmark.json")
 ```
 
-See `examples/ner/` for more usage examples.
+See `examples/ner/` and `examples/classification/` for more usage examples.
 
 ## Development
 
