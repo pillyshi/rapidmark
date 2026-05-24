@@ -20,7 +20,7 @@ def test_rapidmark_label_basic():
 
 def test_rapidmark_label_with_parent():
     label = RapidmarkLabel(id="POLITICIAN", name="Politician", parentId="PERSON")
-    assert label.parent_id == "POLITICIAN" or label.parent_id == "PERSON"
+    assert label.parent_id == "PERSON"
 
 
 def test_rapidmark_label_extra_fields_forbidden():

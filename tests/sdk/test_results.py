@@ -153,3 +153,17 @@ def test_extra_fields_ignored():
     data["unknown_field"] = "should be ignored"
     result = RapidmarkResult.model_validate(data)
     assert result.task_id == "test_task"
+
+
+def test_result_version_must_be_1():
+    data = make_result_data()
+    data["result_version"] = 2
+    with pytest.raises(ValidationError):
+        RapidmarkResult.model_validate(data)
+
+
+def test_excluded_status():
+    data = make_result_data()
+    data["texts"][0]["status"] = "excluded"
+    result = RapidmarkResult.model_validate(data)
+    assert result.texts[0].status == "excluded"
