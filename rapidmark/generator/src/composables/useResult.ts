@@ -12,6 +12,13 @@ export function useResult() {
   const { groups, createGroup } = useEntityGroup()
 
   const loadResult = (data: any): void => {
+    const expectedId = task.value?.definition?.id
+    if (data.task_id && expectedId && data.task_id !== expectedId) {
+      throw new Error(
+        `Task ID mismatch: expected "${expectedId}", got "${data.task_id}"`
+      )
+    }
+
     // New format: { task, worker, texts: [{ id, status, entities }] }
     if (data.texts && Array.isArray(data.texts)) {
       data.texts.forEach((tx: any) => {

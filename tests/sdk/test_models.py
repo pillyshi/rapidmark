@@ -1,4 +1,6 @@
+import json
 import pytest
+from datetime import datetime, timezone
 from pydantic import ValidationError
 
 from rapidmark.sdk.models import (
@@ -105,3 +107,46 @@ def test_rapidmark_task_save_and_load(tmp_path):
     loaded = RapidmarkTask.from_file(out_path)
     assert loaded.definition.id == "save_test"
     assert loaded.texts[0].content == "Tokyo is a city."
+
+
+def _write_result_file(tmp_path, task_id: str) -> "Path":
+    now = datetime.now(timezone.utc).isoformat()
+    data = {
+        "task_id": task_id,
+        "result_version": 1,
+        "worker": "alice",
+        "exported_at": now,
+        "texts": [],
+    }
+    path = tmp_path / f"{task_id}.result.rapidmark.json"
+    path.write_text(json.dumps(data), encoding="utf-8")
+    return path
+
+
+def _make_task(task_id: str) -> RapidmarkTask:
+    return RapidmarkTask(
+        definition=RapidmarkTaskDefinition(id=task_id, name="Test Task"),
+        texts=[],
+    )
+
+
+def test_load_results_matching_task_id(tmp_path):
+    task = _make_task("my_task")
+    result_path = _write_result_file(tmp_path, "my_task")
+    result = task.load_results(result_path)
+    assert result.task_id == "my_task"
+
+
+def test_load_results_mismatched_task_id(tmp_path):
+    task = _make_task("task_a")
+    result_path = _write_result_file(tmp_path, "task_b")
+    with pytest.raises(ValueError, match="task_b") as exc_info:
+        task.load_results(result_path)
+    assert "task_a" in str(exc_info.value)
+    assert "task_b" in str(exc_info.value)
+
+
+def test_load_results_file_not_found(tmp_path):
+    task = _make_task("my_task")
+    with pytest.raises(FileNotFoundError):
+        task.load_results(tmp_path / "nonexistent.result.rapidmark.json")

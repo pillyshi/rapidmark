@@ -92,4 +92,10 @@ class RapidmarkTask(BaseModel):
     def load_results(self, results_file: Union[str, Path]) -> "RapidmarkResult":
         """Load annotation results for this task."""
         from .result import RapidmarkResult
-        return RapidmarkResult.from_file(results_file)
+        result = RapidmarkResult.from_file(results_file)
+        if result.task_id != self.definition.id:
+            raise ValueError(
+                f"Task ID mismatch: result is for task '{result.task_id}', "
+                f"but this task is '{self.definition.id}'"
+            )
+        return result

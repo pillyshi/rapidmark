@@ -161,6 +161,51 @@ describe('useResult', () => {
       expect(t.entities[0].label_id).toBe('organization')
     })
 
+    it('throws when task_id does not match the active task', async () => {
+      const { loadResult } = await setup(mockNerTask)
+
+      expect(() => loadResult({
+        task_id: 'other_task',
+        result_version: 1,
+        worker: null,
+        exported_at: '2026-01-01T00:00:00.000Z',
+        texts: []
+      })).toThrow(/other_task/)
+    })
+
+    it('error message contains both expected and actual task_id', async () => {
+      const { loadResult } = await setup(mockNerTask)
+
+      expect(() => loadResult({
+        task_id: 'wrong_task',
+        result_version: 1,
+        worker: null,
+        exported_at: '2026-01-01T00:00:00.000Z',
+        texts: []
+      })).toThrow(/test_task/)
+    })
+
+    it('succeeds when task_id matches the active task', async () => {
+      const { loadResult } = await setup(mockNerTask)
+
+      expect(() => loadResult({
+        task_id: 'test_task',
+        result_version: 1,
+        worker: null,
+        exported_at: '2026-01-01T00:00:00.000Z',
+        texts: []
+      })).not.toThrow()
+    })
+
+    it('skips task_id check for legacy files without task_id', async () => {
+      const { loadResult } = await setup(mockNerTask)
+
+      expect(() => loadResult({
+        taskInfo: { taskId: 'other_task', taskType: 'ner' },
+        results: {}
+      })).not.toThrow()
+    })
+
     it('ignores texts[].attributes in old-format files and still restores entities', async () => {
       const { exportResult, loadResult } = await setup(mockNerTask)
 
