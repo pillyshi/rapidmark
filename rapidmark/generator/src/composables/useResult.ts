@@ -27,7 +27,7 @@ export function useResult() {
         }
         if (Array.isArray(tx.entities)) {
           tx.entities.forEach((en: any) => {
-            if (typeof en.start === 'number' && typeof en.end === 'number' && (en.labelId || en.label)) {
+            if (typeof en.start === 'number' && typeof en.end === 'number' && (en.labelId || en.label || en.label_id)) {
               addEntity({
                 id: en.id,
                 textId: tx.id,
@@ -69,14 +69,14 @@ export function useResult() {
     const def = task.value?.definition
     const isClassification = def?.type === 'classification'
     const payload = {
-      task: { id: def?.id || '', name: def?.name || '', type: def?.type || 'ner' },
+      task_id: def?.id || '',
+      result_version: 1,
       worker: workerName || null,
       exported_at: new Date().toISOString(),
       texts: (task.value?.texts || []).map((txt, idx) => {
         const base = {
           id: txt.id,
           status: statuses.value[idx] || 'pending',
-          attributes: txt.attributes,
         }
         if (isClassification) {
           return { ...base, label_id: classifications.value[txt.id] ?? null }
@@ -85,7 +85,7 @@ export function useResult() {
           ...base,
           entities: entities.value
             .filter(e => e.textId === txt.id)
-            .map(e => ({ id: e.id, start: e.start, end: e.end, quote: e.quote, labelId: e.labelId })),
+            .map(e => ({ id: e.id, start: e.start, end: e.end, quote: e.quote, label_id: e.labelId })),
           groups: groups.value
             .filter(g => g.textId === txt.id)
             .map(g => ({ id: g.id, entity_ids: g.entityIds }))
