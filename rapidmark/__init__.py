@@ -1,18 +1,15 @@
-"""RapidMark - Fast and efficient NLP annotation tool for NER tasks."""
+"""RapidMark - Fast and efficient NLP annotation tool."""
 
 from .sdk.models import (
     RapidmarkLabel,
     RapidmarkTaskDefinition,
     RapidmarkText,
     RapidmarkTask,
-)
-
-from .sdk.results import (
+    RapidmarkResult,
     RapidmarkResults,
+    TextResult,
     EntityAnnotation,
     EntityGroup,
-    TextResult,
-    TaskMeta,
 )
 
 __version__ = "0.4.0"
@@ -23,9 +20,9 @@ __all__ = [
     "RapidmarkTaskDefinition",
     "RapidmarkText",
     "RapidmarkTask",
+    "RapidmarkResult",
     "RapidmarkResults",
+    "TextResult",
     "EntityAnnotation",
     "EntityGroup",
-    "TextResult",
-    "TaskMeta",
 ]

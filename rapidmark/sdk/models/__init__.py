@@ -1,12 +1,15 @@
 """
-RapidMark SDK - Python SDK for programmatic task definition
+RapidMark SDK models.
 """
 
-from .models import (
+from .task import (
     RapidmarkLabel,
     RapidmarkTaskDefinition,
     RapidmarkText,
     RapidmarkTask,
+)
+
+from .result import (
     RapidmarkResult,
     RapidmarkResults,
     TextResult,

@@ -1,0 +1,166 @@
+{
+  "$defs": {
+    "EntityAnnotation": {
+      "description": "NER entity annotation.",
+      "properties": {
+        "id": {
+          "description": "Entity ID, unique within the text",
+          "title": "Id",
+          "type": "string"
+        },
+        "start": {
+          "description": "Start character offset (inclusive)",
+          "title": "Start",
+          "type": "integer"
+        },
+        "end": {
+          "description": "End character offset (exclusive)",
+          "title": "End",
+          "type": "integer"
+        },
+        "quote": {
+          "description": "Entity surface string",
+          "title": "Quote",
+          "type": "string"
+        },
+        "label_id": {
+          "description": "Label ID matching labels[].id in the task file",
+          "title": "Label Id",
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "start",
+        "end",
+        "quote",
+        "label_id"
+      ],
+      "title": "EntityAnnotation",
+      "type": "object"
+    },
+    "EntityGroup": {
+      "description": "Entity group (co-reference cluster).",
+      "properties": {
+        "id": {
+          "description": "Group ID, unique within the text",
+          "title": "Id",
+          "type": "string"
+        },
+        "entity_ids": {
+          "description": "Entity IDs belonging to this group",
+          "items": {
+            "type": "string"
+          },
+          "title": "Entity Ids",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "entity_ids"
+      ],
+      "title": "EntityGroup",
+      "type": "object"
+    },
+    "TextResult": {
+      "description": "Per-text annotation result.",
+      "properties": {
+        "id": {
+          "description": "Text ID matching texts[].id in the task file",
+          "title": "Id",
+          "type": "string"
+        },
+        "status": {
+          "description": "Annotation status (pending, completed, excluded)",
+          "title": "Status",
+          "type": "string"
+        },
+        "entities": {
+          "description": "NER entity annotations",
+          "items": {
+            "$ref": "#/$defs/EntityAnnotation"
+          },
+          "title": "Entities",
+          "type": "array"
+        },
+        "groups": {
+          "description": "Entity co-reference groups",
+          "items": {
+            "$ref": "#/$defs/EntityGroup"
+          },
+          "title": "Groups",
+          "type": "array"
+        },
+        "label_id": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Assigned label ID (classification tasks only)",
+          "title": "Label Id"
+        }
+      },
+      "required": [
+        "id",
+        "status"
+      ],
+      "title": "TextResult",
+      "type": "object"
+    }
+  },
+  "description": "Single RapidMark annotation result file (canonical result v1).",
+  "properties": {
+    "task_id": {
+      "description": "ID of the task this result belongs to",
+      "title": "Task Id",
+      "type": "string"
+    },
+    "result_version": {
+      "const": 1,
+      "default": 1,
+      "description": "Schema version, always 1",
+      "title": "Result Version",
+      "type": "integer"
+    },
+    "worker": {
+      "anyOf": [
+        {
+          "type": "string"
+        },
+        {
+          "type": "null"
+        }
+      ],
+      "default": null,
+      "description": "Annotator identifier",
+      "title": "Worker"
+    },
+    "exported_at": {
+      "description": "ISO 8601 UTC timestamp of export",
+      "format": "date-time",
+      "title": "Exported At",
+      "type": "string"
+    },
+    "texts": {
+      "description": "Per-text annotation results",
+      "items": {
+        "$ref": "#/$defs/TextResult"
+      },
+      "title": "Texts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "task_id",
+    "exported_at",
+    "texts"
+  ],
+  "title": "RapidmarkResult",
+  "type": "object"
+}

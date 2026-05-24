@@ -1,104 +1,155 @@
 import json
 import pytest
 from datetime import datetime, timezone
+from pydantic import ValidationError
 
-from rapidmark.sdk.results import (
+from rapidmark.sdk.models.result import (
     EntityAnnotation,
+    EntityGroup,
     TextResult,
-    TaskInfo,
-    RapidmarkResults,
+    RapidmarkResult,
 )
 
 
-def make_result_data(task_type="ner"):
+def make_result_data(task_type_hint="ner"):
     now = datetime.now(timezone.utc).isoformat()
     return {
-        "taskInfo": {
-            "taskType": task_type,
-            "taskTitle": "Test Task",
-            "taskId": "test_task",
-            "exportedAt": now,
-            "exportFormat": "unified_v1",
-            "totalTexts": 2,
-            "completedTexts": 1,
-        },
-        "results": {
-            "t1": {
+        "task_id": "test_task",
+        "result_version": 1,
+        "worker": "alice",
+        "exported_at": now,
+        "texts": [
+            {
+                "id": "t1",
                 "status": "completed",
                 "entities": [
-                    {"id": "e1", "start": 0, "end": 5, "text": "Tokyo", "labelId": "LOC", "timestamp": now},
-                    {"id": "e2", "start": 10, "end": 15, "text": "Alice", "labelId": "PER", "timestamp": now},
-                ]
+                    {"id": "e1", "start": 0, "end": 5, "quote": "Tokyo", "label_id": "LOC"},
+                    {"id": "e2", "start": 10, "end": 15, "quote": "Alice", "label_id": "PER"},
+                ],
+                "groups": [],
             },
-            "t2": {
+            {
+                "id": "t2",
                 "status": "pending",
-                "entities": []
-            }
-        }
+                "entities": [],
+                "groups": [],
+            },
+        ],
     }
 
 
-def test_rapidmark_results_from_dict():
-    data = make_result_data()
-    results = RapidmarkResults.model_validate(data)
-    assert results.task_info.task_type == "ner"
-    assert results.task_info.task_title == "Test Task"
-    assert len(results.results) == 2
+def make_classification_data():
+    now = datetime.now(timezone.utc).isoformat()
+    return {
+        "task_id": "cls_task",
+        "result_version": 1,
+        "worker": None,
+        "exported_at": now,
+        "texts": [
+            {"id": "t1", "status": "completed", "label_id": "positive"},
+            {"id": "t2", "status": "completed", "label_id": "negative"},
+            {"id": "t3", "status": "pending"},
+        ],
+    }
+
+
+def test_result_v1_fields():
+    result = RapidmarkResult.model_validate(make_result_data())
+    assert result.task_id == "test_task"
+    assert result.result_version == 1
+    assert result.worker == "alice"
+    assert len(result.texts) == 2
 
 
 def test_get_text_result():
-    results = RapidmarkResults.model_validate(make_result_data())
-    t1 = results.get_text_result("t1")
+    result = RapidmarkResult.model_validate(make_result_data())
+    t1 = result.get_text_result("t1")
     assert t1 is not None
     assert t1.status == "completed"
     assert len(t1.entities) == 2
 
 
+def test_get_text_result_missing():
+    result = RapidmarkResult.model_validate(make_result_data())
+    assert result.get_text_result("nonexistent") is None
+
+
 def test_get_all_entities():
-    results = RapidmarkResults.model_validate(make_result_data())
-    entities = results.get_all_entities()
+    result = RapidmarkResult.model_validate(make_result_data())
+    entities = result.get_all_entities()
     assert len(entities) == 2
     assert entities[0].label_id == "LOC"
+    assert entities[0].quote == "Tokyo"
 
 
 def test_filter_entities_by_label():
-    results = RapidmarkResults.model_validate(make_result_data())
-    loc_entities = results.filter_entities_by_label("LOC")
-    assert len(loc_entities) == 1
-    assert loc_entities[0].text == "Tokyo"
+    result = RapidmarkResult.model_validate(make_result_data())
+    loc = result.filter_entities_by_label("LOC")
+    assert len(loc) == 1
+    assert loc[0].quote == "Tokyo"
 
 
 def test_get_completion_rate():
-    results = RapidmarkResults.model_validate(make_result_data())
-    assert results.get_completion_rate() == 0.5
+    result = RapidmarkResult.model_validate(make_result_data())
+    assert result.get_completion_rate() == 0.5
+
+
+def test_get_completion_rate_empty():
+    data = make_result_data()
+    data["texts"] = []
+    result = RapidmarkResult.model_validate(data)
+    assert result.get_completion_rate() == 0.0
+
+
+def test_entity_group():
+    data = make_result_data()
+    data["texts"][0]["groups"] = [{"id": "g1", "entity_ids": ["e1", "e2"]}]
+    result = RapidmarkResult.model_validate(data)
+    assert result.texts[0].groups[0].entity_ids == ["e1", "e2"]
+
+
+def test_classification_label_id():
+    result = RapidmarkResult.model_validate(make_classification_data())
+    assert result.texts[0].label_id == "positive"
+    assert result.texts[2].label_id is None
+    positive = result.filter_texts_by_label("positive")
+    assert len(positive) == 1
 
 
 def test_from_file(tmp_path):
     data = make_result_data()
     path = tmp_path / "test.result.rapidmark.json"
     path.write_text(json.dumps(data), encoding="utf-8")
-    results = RapidmarkResults.from_file(path)
-    assert results.task_info.task_id == "test_task"
+    result = RapidmarkResult.from_file(path)
+    assert result.task_id == "test_task"
+    assert result.result_version == 1
 
 
 def test_from_file_not_found():
     with pytest.raises(FileNotFoundError):
-        RapidmarkResults.from_file("/nonexistent/path.json")
+        RapidmarkResult.from_file("/nonexistent/path.json")
 
 
-def test_entity_annotation_camel_case():
-    now = datetime.now(timezone.utc).isoformat()
-    entity = EntityAnnotation.model_validate({
-        "id": "e1", "start": 0, "end": 5, "text": "Tokyo",
-        "labelId": "LOC", "timestamp": now
-    })
-    assert entity.label_id == "LOC"
+def test_from_file_invalid_json(tmp_path):
+    path = tmp_path / "bad.json"
+    path.write_text("not json", encoding="utf-8")
+    with pytest.raises(ValueError):
+        RapidmarkResult.from_file(path)
 
 
-def test_entity_annotation_snake_case():
-    now = datetime.now(timezone.utc).isoformat()
-    entity = EntityAnnotation.model_validate({
-        "id": "e1", "start": 0, "end": 5, "text": "Tokyo",
-        "label_id": "LOC", "timestamp": now
-    })
-    assert entity.label_id == "LOC"
+def test_old_format_raises_validation_error():
+    old_data = {
+        "task": {"id": "t", "name": "Task", "type": "ner"},
+        "worker": "alice",
+        "exported_at": datetime.now(timezone.utc).isoformat(),
+        "texts": [],
+    }
+    with pytest.raises(ValidationError):
+        RapidmarkResult.model_validate(old_data)
+
+
+def test_extra_fields_ignored():
+    data = make_result_data()
+    data["unknown_field"] = "should be ignored"
+    result = RapidmarkResult.model_validate(data)
+    assert result.task_id == "test_task"

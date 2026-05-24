@@ -1,6 +1,9 @@
 import { describe, expect, it, vi, beforeEach } from 'vitest'
+import Ajv from 'ajv'
+import addFormats from 'ajv-formats'
 import mockNerTask from '../../__mocks__/task'
 import mockClassificationTask from '../../__mocks__/classificationTask'
+import resultSchema from '@schema/result.schema.json'
 
 // All composables use module-level singleton refs.
 // vi.resetModules() in beforeEach gives each test a fresh state.
@@ -176,6 +179,38 @@ describe('useResult', () => {
       expect(t.status).toBe('excluded')
       expect(t.entities).toHaveLength(1)
       expect(t).not.toHaveProperty('attributes')
+    })
+  })
+
+  describe('schema conformance (ajv)', () => {
+    let validate: ReturnType<Ajv['compile']>
+
+    beforeEach(() => {
+      const ajv = new Ajv()
+      addFormats(ajv)
+      validate = ajv.compile(resultSchema)
+    })
+
+    it('NER export conforms to result.schema.json', async () => {
+      const { exportResult } = await setup(mockNerTask)
+      const data = JSON.parse(exportResult('alice'))
+      const valid = validate(data)
+      if (!valid) console.error(validate.errors)
+      expect(valid).toBe(true)
+    })
+
+    it('classification export conforms to result.schema.json', async () => {
+      const { exportResult, loadResult } = await setup(mockClassificationTask)
+      loadResult({
+        texts: [
+          { id: 'text_1', status: 'completed', label_id: 'pos' },
+          { id: 'text_2', status: 'completed', label_id: 'neg' },
+        ]
+      })
+      const data = JSON.parse(exportResult('bob'))
+      const valid = validate(data)
+      if (!valid) console.error(validate.errors)
+      expect(valid).toBe(true)
     })
   })
 })

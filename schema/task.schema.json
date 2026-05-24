@@ -1,0 +1,137 @@
+{
+  "$defs": {
+    "RapidmarkLabel": {
+      "additionalProperties": false,
+      "description": "Label definition for annotation tasks.",
+      "properties": {
+        "id": {
+          "description": "Unique identifier for the label",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Display name for the label",
+          "title": "Name",
+          "type": "string"
+        },
+        "parentId": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Parent label ID for hierarchical structure",
+          "title": "Parentid"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "RapidmarkLabel",
+      "type": "object"
+    },
+    "RapidmarkTaskDefinition": {
+      "additionalProperties": false,
+      "description": "Task definition.",
+      "properties": {
+        "id": {
+          "description": "Unique task identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "name": {
+          "description": "Human-readable task name",
+          "title": "Name",
+          "type": "string"
+        },
+        "type": {
+          "default": "ner",
+          "description": "Task type (ner, classification)",
+          "title": "Type",
+          "type": "string"
+        },
+        "description": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Task description",
+          "title": "Description"
+        },
+        "labels": {
+          "description": "Available labels",
+          "items": {
+            "$ref": "#/$defs/RapidmarkLabel"
+          },
+          "title": "Labels",
+          "type": "array"
+        }
+      },
+      "required": [
+        "id",
+        "name"
+      ],
+      "title": "RapidmarkTaskDefinition",
+      "type": "object"
+    },
+    "RapidmarkText": {
+      "additionalProperties": false,
+      "description": "Text data for annotation.",
+      "properties": {
+        "id": {
+          "description": "Unique text identifier",
+          "title": "Id",
+          "type": "string"
+        },
+        "content": {
+          "description": "Text content to be annotated",
+          "title": "Content",
+          "type": "string"
+        },
+        "attributes": {
+          "additionalProperties": true,
+          "description": "Additional text attributes",
+          "title": "Attributes",
+          "type": "object"
+        }
+      },
+      "required": [
+        "id",
+        "content"
+      ],
+      "title": "RapidmarkText",
+      "type": "object"
+    }
+  },
+  "additionalProperties": false,
+  "description": "Complete task definition with texts and metadata.",
+  "properties": {
+    "definition": {
+      "$ref": "#/$defs/RapidmarkTaskDefinition",
+      "description": "Task definition"
+    },
+    "texts": {
+      "description": "Texts to annotate",
+      "items": {
+        "$ref": "#/$defs/RapidmarkText"
+      },
+      "title": "Texts",
+      "type": "array"
+    }
+  },
+  "required": [
+    "definition"
+  ],
+  "title": "RapidmarkTask",
+  "type": "object"
+}
