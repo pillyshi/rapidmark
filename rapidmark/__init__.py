@@ -12,7 +12,7 @@ from .sdk.models import (
     EntityGroup,
 )
 
-__version__ = "0.4.0"
+__version__ = "0.5.1"
 __author__ = "pillyshi"
 
 __all__ = [

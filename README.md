@@ -22,12 +22,12 @@ Install RapidMark using pip:
 pip install rapidmark
 ```
 
-Or install from source using Poetry:
+Or install from source using uv:
 
 ```bash
 git clone https://github.com/pillyshi/rapidmark-public.git
 cd rapidmark-public
-poetry install
+uv sync
 ```
 
 ## Requirements
@@ -178,8 +178,8 @@ See `examples/ner/` and `examples/classification/` for more usage examples.
 ```bash
 git clone https://github.com/pillyshi/rapidmark-public.git
 cd rapidmark-public
-poetry install
-poetry run rapidmark --help
+uv sync
+uv run rapidmark --help
 ```
 
 ## License
