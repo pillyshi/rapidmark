@@ -227,6 +227,45 @@ describe('useResult', () => {
     })
   })
 
+  describe('loadResult — classification status per text', () => {
+    it('marks each classified text completed at its own index, not just the first text', async () => {
+      const { exportResult, loadResult } = await setup(mockClassificationTask)
+
+      // No explicit `status` field — status must be derived from label_id alone,
+      // for every text in the batch (regression test for a bug where only the
+      // first imported text ended up 'completed' and the rest stayed 'pending').
+      loadResult({
+        texts: [
+          { id: 'text_1', label_id: 'pos' },
+          { id: 'text_2', label_id: 'neg' },
+        ]
+      })
+
+      const data = JSON.parse(exportResult(''))
+      const t1 = data.texts.find((t: any) => t.id === 'text_1')
+      const t2 = data.texts.find((t: any) => t.id === 'text_2')
+      expect(t1.status).toBe('completed')
+      expect(t2.status).toBe('completed')
+    })
+
+    it('does not force an unrelated text to completed as a side effect of classifying another', async () => {
+      const { exportResult, loadResult } = await setup(mockClassificationTask)
+
+      // Only text_2 is classified; text_1 must remain 'pending'.
+      loadResult({
+        texts: [
+          { id: 'text_2', label_id: 'neg' },
+        ]
+      })
+
+      const data = JSON.parse(exportResult(''))
+      const t1 = data.texts.find((t: any) => t.id === 'text_1')
+      const t2 = data.texts.find((t: any) => t.id === 'text_2')
+      expect(t1.status).toBe('pending')
+      expect(t2.status).toBe('completed')
+    })
+  })
+
   describe('schema conformance (ajv)', () => {
     let validate: ReturnType<Ajv['compile']>
 
