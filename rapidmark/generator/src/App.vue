@@ -126,9 +126,17 @@ const onFileSelected = (e: Event) => {
 }
 
 // ── Keyboard shortcuts ───────────────────────────────────────────────────────
+// Keyboard-driven navigation never moves DOM focus itself, so a previously
+// focused element (e.g. a clicked classification label button) stays
+// `document.activeElement` and keeps showing its focus ring on the next item.
+const blurActiveElement = () => {
+  (document.activeElement as HTMLElement | null)?.blur()
+}
+
 const goNext = () => {
   const max = (task.value?.texts?.length || 1) - 1
   if (currentTextIndex.value < max) {
+    blurActiveElement()
     currentTextIndex.value++
     clearEntitySelection()
     clearPopover()
@@ -136,6 +144,7 @@ const goNext = () => {
 }
 const goPrev = () => {
   if (currentTextIndex.value > 0) {
+    blurActiveElement()
     currentTextIndex.value--
     clearEntitySelection()
     clearPopover()
@@ -146,6 +155,7 @@ const goNextPending = () => {
   for (let k = 1; k <= n; k++) {
     const cand = (currentTextIndex.value + k) % n
     if ((statuses.value[cand] || 'pending') === 'pending') {
+      blurActiveElement()
       currentTextIndex.value = cand
       clearEntitySelection()
       clearPopover()
