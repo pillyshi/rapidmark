@@ -1,6 +1,6 @@
 [project]
 name = "rapidmark"
-version = "0.5.1"
+version = "0.5.2"
 description = "Fast and efficient NLP annotation tool for text labeling tasks"
 authors = [{ name = "pillyshi" }]
 readme = "README.md"
